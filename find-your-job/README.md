@@ -209,6 +209,111 @@ flowchart TD
 
 ---
 
+## 🔄 Using This Skill with Other AI Tools
+
+This skill follows the [open Agent Skills standard](https://agentskills.io), making it portable across multiple platforms.
+
+### GitHub Copilot
+
+Copilot doesn't natively support `SKILL.md`, but you can adapt the instructions:
+
+**Option A — Repository-wide instructions** (`.github/copilot-instructions.md`)
+
+Place a condensed version of this skill's instructions in your repo:
+
+```markdown
+# Find Your Job — Job Matcher Skill
+
+## Tech Stack
+- Python 3.10+, Playwright (browser automation), MarkItDown (PDF→Markdown)
+- JSON config (`job-matcher-config.json`) for search profiles & thresholds
+
+## Key Commands
+- `pip install 'markitdown[pdf]'` — install PDF converter
+- `pip install playwright && playwright install chromium` — install scraper
+
+## Coding Guidelines
+- All scraped jobs must include a `url` field with the direct job listing link
+- Score jobs against resume profile: core skills ≥90%, nice-to-have ≥70%
+- Deduplicate jobs with same company + same title (keep highest score)
+- Filter by company eligibility (≥10 yrs old, ≥1000 employees)
+- Resume is cached as `resume-cached.md` — reuse unless path changes
+```
+
+**Option B — Path-specific instructions** (`.github/instructions/job-matcher.instructions.md`)
+
+```markdown
+---
+name: job-matcher
+description: Instructions for the Find Your Job skill — scraping, scoring, and matching jobs.
+applyTo: "**/*.md"
+---
+
+...
+```
+
+### Claude Code
+
+Claude Code natively supports the Agent Skills standard. Copy this skill to Claude's skills directory:
+
+```bash
+# Global (available in every project)
+cp -r find-your-job ~/.claude/skills/
+
+# Or per-project
+cp -r find-your-job your-project/.claude/skills/
+```
+
+Claude will auto-discover the skill and load it when you say "find jobs", "match resume", or "job search". You can also invoke it manually with `/find-your-job`.
+
+For persistent project-wide context (loaded every session), add key points to `CLAUDE.md`:
+
+```markdown
+## Find Your Job Skill
+This project includes a job matcher skill at `.claude/skills/find-your-job/SKILL.md`.
+- Uses Playwright to scrape LinkedIn, Naukri, Glassdoor
+- Matches jobs against user's resume with semantic scoring (core ≥90%, nice ≥70%)
+- Outputs ranked table + JSON results
+- Config file: `job-matcher-config.json`
+```
+
+### Kiro
+
+Kiro also follows the Agent Skills standard. Copy the skill to Kiro's skills directory:
+
+```bash
+# Global (available across all workspaces)
+cp -r find-your-job ~/.kiro/skills/
+
+# Or workspace-specific
+cp -r find-your-job your-project/.kiro/skills/
+```
+
+For custom agents, add to the agent's `resources` field:
+
+```json
+{
+  "resources": [
+    "skill://.kiro/skills/**/SKILL.md"
+  ]
+}
+```
+
+### Compatibility Matrix
+
+| Feature | OpenCode | Claude Code | GitHub Copilot | Kiro |
+|---------|:--------:|:-----------:|:--------------:|:----:|
+| Native `SKILL.md` | ✅ | ✅ | ❌ | ✅ |
+| Agent Skills standard | ✅ | ✅ | ❌ | ✅ |
+| Auto-activation | ✅ | ✅ | ✅ (via `copilot-instructions.md`) | ✅ |
+| Manual `/command` | ✅ | ✅ | ❌ | ✅ |
+| Scripts & resources | ✅ | ✅ | ❌ | ✅ |
+| Progressive loading | ✅ | ✅ | N/A | ✅ |
+
+> **Tip:** Since all these tools support `AGENTS.md`, you can symlink `SKILL.md` → `AGENTS.md` in the repo root for broad compatibility without duplication.
+
+---
+
 ## 🧠 Smart Matching Features
 
 | Feature | Description |
