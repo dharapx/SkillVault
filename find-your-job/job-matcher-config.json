@@ -1,0 +1,105 @@
+{
+  "resume": "C:\\Users\\pulak\\Downloads\\Pulakesh_Dhara_DevOps_Lead.pdf",
+  "jobSites": ["linkedin", "naukri", "glassdoor"],
+  "searches": [
+    {
+      "profile": "DevOps Lead / Platform Engineer",
+      "linkedin": {
+        "keywords": "DevOps Lead Platform Engineer Kubernetes Terraform AWS",
+        "locations": ["Pune", "Kolkata", "Remote", "Hybrid"],
+        "filters": {
+          "remote": true,
+          "datePosted": "past_week",
+          "experienceLevel": ["mid_senior", "director"]
+        }
+      },
+      "naukri": {
+        "keywords": "DevOps Lead Platform Engineer",
+        "locations": ["Pune", "Kolkata", "All India"],
+        "filters": {
+          "remote": true,
+          "datePosted": "last_3_days",
+          "experience": "8-12 years"
+        }
+      },
+      "glassdoor": {
+        "keywords": "DevOps Lead Platform Engineer",
+        "locations": ["Pune, India", "Kolkata, India"],
+        "filters": {
+          "remote": true,
+          "datePosted": "past_3_days",
+          "experienceLevel": "mid-senior"
+        }
+      }
+    },
+    {
+      "profile": "Senior DevOps Engineer",
+      "linkedin": {
+        "keywords": "Senior DevOps Engineer AWS Kubernetes CI/CD Terraform",
+        "locations": ["Pune", "Kolkata", "Remote", "Hybrid"],
+        "filters": {
+          "remote": true,
+          "datePosted": "past_week",
+          "experienceLevel": ["mid_senior"]
+        }
+      },
+      "naukri": {
+        "keywords": "Senior DevOps Engineer AWS Kubernetes",
+        "locations": ["Pune", "Bangalore", "All India"],
+        "filters": {
+          "remote": true,
+          "datePosted": "last_3_days",
+          "experience": "6-10 years"
+        }
+      },
+      "glassdoor": {
+        "keywords": "Senior DevOps Engineer AWS Kubernetes",
+        "locations": ["Pune, India", "Bangalore, India"],
+        "filters": {
+          "remote": true,
+          "datePosted": "past_3_days",
+          "experienceLevel": "mid-senior"
+        }
+      }
+    },
+    {
+      "profile": "Cloud Architect / SRE",
+      "linkedin": {
+        "keywords": "Cloud Architect Site Reliability Engineer Observability AWS",
+        "locations": ["Pune", "Kolkata", "Remote", "Hybrid"],
+        "filters": {
+          "remote": true,
+          "datePosted": "past_week",
+          "experienceLevel": ["mid_senior", "director"]
+        }
+      },
+      "naukri": {
+        "keywords": "Cloud Architect SRE Observability",
+        "locations": ["Pune", "Kolkata", "All India"],
+        "filters": {
+          "remote": true,
+          "datePosted": "last_3_days",
+          "experience": "8-14 years"
+        }
+      },
+      "glassdoor": {
+        "keywords": "Cloud Architect SRE Observability",
+        "locations": ["Pune, India", "Kolkata, India"],
+        "filters": {
+          "remote": true,
+          "datePosted": "past_3_days",
+          "experienceLevel": "mid-senior"
+        }
+      }
+    }
+  ],
+  "scoring": {
+    "coreMatchThreshold": 90,
+    "niceToHaveThreshold": 70
+  },
+  "companyEligibility": {
+    "minAgeYears": 10,
+    "minEmployees": 1000
+  },
+  "jobPostMaxDays": 3
+}

@@ -1,0 +1,457 @@
+{
+  "runTimestamp": "2026-05-30T08:32:00Z",
+  "config": {
+    "resume": "C:\\Users\\pulak\\Downloads\\Pulakesh_Dhara_DevOps_Lead.pdf",
+    "searches": [
+      { "profile": "DevOps Lead / Platform Engineer", "keywords": "DevOps Lead Platform Engineer Kubernetes Terraform AWS", "locations": ["Pune", "Kolkata", "Remote", "Hybrid"] },
+      { "profile": "Senior DevOps Engineer", "keywords": "Senior DevOps Engineer AWS Kubernetes CI/CD Terraform", "locations": ["Pune", "Kolkata", "Remote", "Hybrid"] },
+      { "profile": "Cloud Architect / SRE", "keywords": "Cloud Architect Site Reliability Engineer Observability AWS", "locations": ["Pune", "Kolkata", "Remote", "Hybrid"] }
+    ],
+    "scoring": { "coreMatchThreshold": 90, "niceToHaveThreshold": 70 },
+    "companyEligibility": { "minAgeYears": 10, "minEmployees": 1000 },
+    "jobPostMaxDays": 3
+  },
+  "results": [
+    {
+      "title": "DevOps Staff Engineer - Remote Work",
+      "company": "BairesDev",
+      "companyPageUrl": "https://www.linkedin.com/company/bairesdev",
+      "location": "Pune District, Maharashtra, India (Remote)",
+      "url": "https://www.linkedin.com/jobs/view/4418297213",
+      "postedDate": "3 days ago",
+      "companyAge": 15,
+      "companySize": "5,001-10,000 employees",
+      "companyEligible": true,
+      "matchScores": { "core": 100, "niceToHave": 100, "overall": "pass" },
+      "coreRequirements": [
+        "6+ years of infrastructure engineering and DevOps experience",
+        "Expert-level cloud platforms knowledge (AWS/Azure/GCP)",
+        "Containerization & orchestration (Docker, Kubernetes)",
+        "Infrastructure automation (Terraform)",
+        "CI/CD pipeline design & implementation",
+        "System design, performance optimization & security best practices",
+        "Leadership & cross-team technical influence"
+      ],
+      "niceToHaveRequirements": [
+        "Large-scale distributed systems experience",
+        "Technical standards & strategy setting",
+        "Mentoring & guiding engineering teams",
+        "Advanced English proficiency"
+      ],
+      "matchedCore": [
+        "6+ years ✓ - ~9 years DevOps/Infrastructure since 2017",
+        "Cloud ✓ - AWS expert (EC2, EKS, Lambda, S3, CloudFront), Azure",
+        "Containers ✓ - Kubernetes, Docker, Helm expert",
+        "IaC ✓ - Terraform expert, CloudFormation, Ansible",
+        "CI/CD ✓ - Azure DevOps, TeamCity, Jenkins, GitHub Actions",
+        "System design ✓ - Production infrastructure across 14+ AWS accounts",
+        "Leadership ✓ - Leading DevOps teams, cross-team collaboration"
+      ],
+      "matchedNiceToHave": [
+        "Distributed systems ✓ - Multi-account, multi-region AWS infra",
+        "Technical standards ✓ - IaC modules, Helm frameworks, DevOps best practices",
+        "Mentoring ✓ - Training engineers on K8s, Terraform, CI/CD",
+        "English ✓ - Professional proficiency"
+      ],
+      "searchProfile": "Senior DevOps Engineer",
+      "source": "linkedin"
+    },
+    {
+      "title": "Senior DevOps Lead / Infrastructure Engineer",
+      "company": "Weekday AI (YC W21)",
+      "companyPageUrl": "https://www.linkedin.com/company/weekdayai",
+      "location": "India (Remote)",
+      "url": "https://www.linkedin.com/jobs/view/4420266109",
+      "postedDate": "2 days ago",
+      "salary": "₹3M/yr - ₹4M/yr",
+      "companyAge": 4,
+      "companySize": "51-200 employees",
+      "companyEligible": false,
+      "matchScores": { "core": 100, "niceToHave": 75, "overall": "pass" },
+      "coreRequirements": [
+        "AWS cloud infrastructure management",
+        "CI/CD pipeline design and optimization",
+        "Infrastructure as Code (Terraform)",
+        "Kubernetes cluster management",
+        "Monitoring, observability, logging & incident response",
+        "Security, compliance (SOC2, HIPAA)",
+        "Identity & access management (Okta, Azure AD)",
+        "8+ years experience"
+      ],
+      "niceToHaveRequirements": [
+        "Startup experience",
+        "AI/ML infrastructure",
+        "Cost optimization",
+        "Multi-region deployment"
+      ],
+      "matchedCore": [
+        "AWS ✓ - Expert in EC2, EKS, Lambda, S3, CloudFront, etc.",
+        "CI/CD ✓ - Expert in Azure DevOps, TeamCity, Jenkins, GitHub Actions",
+        "IaC ✓ - Terraform expert, CloudFormation",
+        "K8s ✓ - Expert in Kubernetes, EKS, Docker, Helm",
+        "Observability ✓ - Grafana, Prometheus, Tempo, Splunk",
+        "Security ✓ - IAM, Secrets Manager, DevSecOps, Acunetix",
+        "IAM ✓ - AWS IAM, Azure AD experience",
+        "8+ yrs ✓ - ~9 years experience since 2017"
+      ],
+      "matchedNiceToHave": [
+        "Startup ✓ - Adaptable, fast-paced environment experience",
+        "Cost optimization ✓ - AWS cost management experience",
+        "Multi-region ✓ - Multi-account, multi-region AWS architecture"
+      ],
+      "searchProfile": "DevOps Lead / Platform Engineer",
+      "source": "linkedin"
+    },
+    {
+      "title": "Senior Cloud Engineer, VP",
+      "company": "Deutsche Bank",
+      "companyPageUrl": "https://www.linkedin.com/company/deutsche-bank",
+      "location": "Pune Division, Maharashtra, India (Hybrid)",
+      "url": "https://www.linkedin.com/jobs/view/4419478700",
+      "postedDate": "3 days ago",
+      "companyAge": 156,
+      "companySize": "10,001+ employees",
+      "companyEligible": true,
+      "matchScores": { "core": 100, "niceToHave": 80, "overall": "pass" },
+      "coreRequirements": [
+        "Cloud platform expertise (AWS/Azure/GCP)",
+        "Infrastructure automation & IaC",
+        "Containerization & orchestration",
+        "CI/CD pipeline management",
+        "Senior-level engineering experience (VP grade)"
+      ],
+      "niceToHaveRequirements": [
+        "Financial services domain experience",
+        "Enterprise-scale operations",
+        "Multi-cloud strategy",
+        "Security & compliance governance",
+        "Team leadership & mentorship"
+      ],
+      "matchedCore": [
+        "Cloud ✓ - AWS expert, multi-cloud (Azure)",
+        "IaC ✓ - Terraform, CloudFormation",
+        "Containers ✓ - K8s, Docker, Helm",
+        "CI/CD ✓ - Azure DevOps, Jenkins, GitHub Actions",
+        "Senior-level ✓ - DevOps Lead, ~9 years experience"
+      ],
+      "matchedNiceToHave": [
+        "Enterprise ops ✓ - 14+ AWS accounts, large-scale infra",
+        "Multi-cloud ✓ - AWS, Azure experience",
+        "Security ✓ - IAM, Secrets Manager, DevSecOps",
+        "Leadership ✓ - Leading teams, coaching engineers"
+      ],
+      "searchProfile": "Cloud Architect / SRE",
+      "source": "linkedin"
+    },
+    {
+      "title": "Software Engineering, Senior (Cloud Infrastructure)",
+      "company": "Medallia",
+      "companyPageUrl": "https://www.linkedin.com/company/medallia",
+      "location": "Pune District, Maharashtra, India (Remote)",
+      "url": "https://www.linkedin.com/jobs/view/4409986537",
+      "postedDate": "3 days ago",
+      "companyAge": 24,
+      "companySize": "1,001-5,000 employees",
+      "companyEligible": true,
+      "matchScores": { "core": 100, "niceToHave": 100, "overall": "pass" },
+      "coreRequirements": [
+        "Cloud infrastructure engineering",
+        "AWS/Azure/GCP experience",
+        "Kubernetes & containerization",
+        "Infrastructure automation",
+        "CI/CD pipelines",
+        "Monitoring & observability"
+      ],
+      "niceToHaveRequirements": [
+        "SaaS platform experience",
+        "Microservices architecture",
+        "Configuration management",
+        "Scripting & automation"
+      ],
+      "matchedCore": [
+        "Cloud infra ✓ - AWS expert, multi-cloud",
+        "K8s ✓ - Expert level K8s, Docker, Helm",
+        "Automation ✓ - Terraform, CloudFormation",
+        "CI/CD ✓ - Expert in multiple CI/CD tools",
+        "Monitoring ✓ - Grafana, Prometheus, Splunk, Tempo"
+      ],
+      "matchedNiceToHave": [
+        "SaaS ✓ - Current role at Saama (SaaS company)",
+        "Microservices ✓ - Docker, K8s, event-driven architectures",
+        "Scripting ✓ - Python, Bash, PowerShell, Rust"
+      ],
+      "searchProfile": "Senior DevOps Engineer",
+      "source": "linkedin"
+    },
+    {
+      "title": "Technical Manager",
+      "company": "World Wide Technology",
+      "companyPageUrl": "https://www.linkedin.com/company/world-wide-technology",
+      "location": "Pune District, Maharashtra, India (Hybrid)",
+      "url": "https://www.linkedin.com/jobs/view/4418579847",
+      "postedDate": "2 days ago",
+      "companyAge": 30,
+      "companySize": "10,001+ employees",
+      "companyEligible": true,
+      "matchScores": { "core": 100, "niceToHave": 75, "overall": "pass" },
+      "coreRequirements": [
+        "Technical leadership experience",
+        "Cloud infrastructure expertise",
+        "DevOps practices & methodologies",
+        "Team management & mentoring",
+        "Client-facing technical consulting"
+      ],
+      "niceToHaveRequirements": [
+        "Multi-cloud environment experience",
+        "Enterprise automation",
+        "Pre-sales or solution architecture",
+        "Agile/SCRUM certification"
+      ],
+      "matchedCore": [
+        "Leadership ✓ - DevOps Lead, team coordination",
+        "Cloud ✓ - AWS, Azure",
+        "DevOps ✓ - CI/CD, IaC, monitoring, security",
+        "Mentoring ✓ - Training teams on K8s, Terraform, CI/CD",
+        "Technical consulting ✓ - Cross-team collaboration"
+      ],
+      "matchedNiceToHave": [
+        "Multi-cloud ✓ - AWS & Azure",
+        "Enterprise automation ✓ - Terraform, Helm, CI/CD",
+        "Solution architecture ✓ - Cloud architecture experience"
+      ],
+      "searchProfile": "Cloud Architect / SRE",
+      "source": "linkedin"
+    },
+    {
+      "title": "Cloud Architect (AWS)",
+      "company": "Kani Solutions Inc",
+      "companyPageUrl": "https://www.linkedin.com/company/kani-solutions",
+      "location": "India (Remote)",
+      "url": "https://www.linkedin.com/jobs/view/4420978505",
+      "postedDate": "16 hours ago",
+      "companyAge": null,
+      "companySize": null,
+      "companyEligible": false,
+      "matchScores": { "core": 94, "niceToHave": 71, "overall": "pass" },
+      "coreRequirements": [
+        "12+ years engineering experience (partial match with ~9 yrs)",
+        "4+ years in cloud architecture or senior platform engineering",
+        "Deep AWS expertise (compute, storage, networking, identity)",
+        "Multi-account, multi-region architecture",
+        "IaC standards using Terraform",
+        "Security architecture (IAM, encryption, compliance)",
+        "Container orchestration (ECS, EKS/K8s) and serverless",
+        "Python or TypeScript coding",
+        "AI coding tools for prototyping"
+      ],
+      "niceToHaveRequirements": [
+        "Media processing / CDN platform architecture",
+        "AI/ML inference platform experience",
+        "Cloud-native OSS (K8s, Istio, OpenTelemetry, Kafka)",
+        "Data platform architecture (Iceberg, Delta, streaming)",
+        "Compliance frameworks (GDPR, SOC2, HIPAA)",
+        "Platform engineering (internal developer platforms)",
+        "Architecture review boards / RFC processes"
+      ],
+      "matchedCore": [
+        "12+ yrs ~ ✓ - 9 years, partial match (strong for ~7+ yr requirement)",
+        "Cloud arch ✓ - 4+ yrs as DevOps Lead/Senior DevOps",
+        "AWS ✓ - Expert in 20+ AWS services",
+        "Multi-account ✓ - 14+ AWS accounts, multiple regions",
+        "IaC ✓ - Terraform expert, reusable modules",
+        "Security ✓ - IAM, Secrets Manager, least-privilege",
+        "Containers ✓ - EKS, K8s, Docker, Helm expert",
+        "Python ✓ - Expert in Python automation",
+        "AI tools ✓ - GitHub Copilot, Amazon Kiro, OpenCode"
+      ],
+      "matchedNiceToHave": [
+        "Cloud-native OSS ✓ - K8s, OpenTelemetry, Prometheus, Grafana",
+        "Data platform ✓ - Databricks, MongoDB, MySQL experience",
+        "Compliance ✓ - IAM governance, audit controls",
+        "Platform eng ✓ - Internal developer platforms, self-service IaC",
+        "Arch review ✓ - Leading architecture decisions"
+      ],
+      "searchProfile": "Cloud Architect / SRE",
+      "source": "linkedin"
+    },
+    {
+      "title": "Senior DevOps Engineer",
+      "company": "Talentgigs",
+      "companyPageUrl": "https://www.linkedin.com/company/talentgigs",
+      "location": "India (Remote)",
+      "url": "https://www.linkedin.com/jobs/view/4419835790",
+      "postedDate": "2 days ago",
+      "companyAge": null,
+      "companySize": "51-200 employees",
+      "companyEligible": false,
+      "matchScores": { "core": 100, "niceToHave": 75, "overall": "pass" },
+      "coreRequirements": [
+        "7+ years DevOps / Platform Engineering",
+        "AWS infrastructure greenfield design",
+        "Terraform (production experience)",
+        "CI/CD pipeline implementation",
+        "EKS and container-based deployments",
+        "AWS services (EC2, IAM, VPC, S3, Route53, CloudWatch, RDS)",
+        "Monitoring, alerting, operational dashboards",
+        "Python or shell scripting"
+      ],
+      "niceToHaveRequirements": [
+        "Startup / hedge fund domain experience",
+        "Cost optimization dashboards",
+        "Infrastructure security & access control",
+        "Linux administration"
+      ],
+      "matchedCore": [
+        "7+ yrs ✓ - ~9 years DevOps/infrastructure experience",
+        "AWS ✓ - Expert across 20+ AWS services",
+        "Terraform ✓ - Expert, reusable modules",
+        "CI/CD ✓ - Expert in Azure DevOps, Jenkins, TeamCity",
+        "EKS ✓ - Expert Kubernetes, EKS, Docker",
+        "AWS services ✓ - EC2, IAM, VPC, S3, Route53, CloudWatch, RDS",
+        "Monitoring ✓ - Grafana, Prometheus, Splunk, CloudWatch",
+        "Scripting ✓ - Python, Bash, PowerShell, Rust"
+      ],
+      "matchedNiceToHave": [
+        "Cost optimization ✓ - AWS cost management",
+        "Security ✓ - IAM governance, DevSecOps",
+        "Linux ✓ - Strong Linux administration"
+      ],
+      "searchProfile": "Senior DevOps Engineer",
+      "source": "linkedin"
+    }
+  ],
+  {
+    "title": "Senior DevOps Engineer",
+    "company": "Cybage",
+    "companyPageUrl": "https://www.naukri.com/cybage-jobs-careers-479",
+    "location": "Pune (Hybrid)",
+    "url": "https://www.naukri.com/job-listings-senior-devops-engineer-cybage-pune-10-to-20-years-290526013033",
+    "postedDate": "1 day ago",
+    "companyAge": 30,
+    "companySize": "5,001-10,000 employees",
+    "companyEligible": true,
+    "matchScores": { "core": 95, "niceToHave": 75, "overall": "pass" },
+    "coreRequirements": [
+      "10+ years DevOps experience",
+      "Cloud platform expertise",
+      "CI/CD pipeline management",
+      "Containerization & orchestration",
+      "Infrastructure automation"
+    ],
+    "niceToHaveRequirements": [
+      "Multi-cloud experience",
+      "Team leadership",
+      "Agile methodologies",
+      "DevSecOps practices"
+    ],
+    "matchedCore": [
+      "10+ yrs ~ ✓ - ~9 years experience (close match)",
+      "Cloud ✓ - AWS expert, Azure",
+      "CI/CD ✓ - Azure DevOps, Jenkins, GitHub Actions",
+      "Containers ✓ - K8s, Docker, Helm",
+      "IaC ✓ - Terraform, CloudFormation"
+    ],
+    "matchedNiceToHave": [
+      "Multi-cloud ✓ - AWS & Azure",
+      "Leadership ✓ - DevOps Lead, mentoring teams",
+      "DevSecOps ✓ - Security automation, IAM governance"
+    ],
+    "searchProfile": "Senior DevOps Engineer",
+    "source": "naukri"
+  },
+  {
+    "title": "Senior Data DevOps Engineer",
+    "company": "Persistent Systems",
+    "companyPageUrl": "https://www.naukri.com/persistent-systems-jobs-careers-8842",
+    "location": "Pune, Chennai, Bengaluru",
+    "url": "https://www.naukri.com/job-listings-senior-data-devops-engineer-persistent-pune-chennai-bengaluru-6-to-8-years-270526027373",
+    "postedDate": "2 days ago",
+    "companyAge": 34,
+    "companySize": "10,001+ employees",
+    "companyEligible": true,
+    "matchScores": { "core": 95, "niceToHave": 70, "overall": "pass" },
+    "coreRequirements": [
+      "6+ years Data DevOps / DevOps experience",
+      "AWS cloud services",
+      "Kubernetes & Docker",
+      "Terraform / Infrastructure as Code",
+      "CI/CD pipelines",
+      "Data engineering platforms"
+    ],
+    "niceToHaveRequirements": [
+      "Big data technologies",
+      "Python scripting",
+      "Database administration",
+      "Monitoring & observability"
+    ],
+    "matchedCore": [
+      "6+ yrs ✓ - ~9 years DevOps experience",
+      "AWS ✓ - Expert in 20+ AWS services",
+      "K8s ✓ - Expert in Kubernetes, EKS, Docker",
+      "IaC ✓ - Terraform expert",
+      "CI/CD ✓ - Expert in Azure DevOps, Jenkins",
+      "Data platforms ✓ - Databricks, MongoDB experience"
+    ],
+    "matchedNiceToHave": [
+      "Python ✓ - Expert Python programmer",
+      "Monitoring ✓ - Grafana, Prometheus, Splunk",
+      "Databases ✓ - MySQL, PostgreSQL, MongoDB"
+    ],
+    "searchProfile": "Senior DevOps Engineer",
+    "source": "naukri"
+  },
+  {
+    "title": "Sr DevOps Engineer",
+    "company": "Comprinno Technologies",
+    "companyPageUrl": "https://www.naukri.com/comprinno-technologies-jobs-careers-6072919",
+    "location": "Pune",
+    "url": "https://www.naukri.com/job-listings-sr-devops-engineer-comprinno-technologies-pvt-ltd-pune-6-to-8-years-290526507368",
+    "postedDate": "1 day ago",
+    "companyAge": 8,
+    "companySize": "51-200 employees",
+    "companyEligible": false,
+    "matchScores": { "core": 95, "niceToHave": 75, "overall": "pass" },
+    "coreRequirements": [
+      "6-8 years DevOps experience",
+      "AWS/Azure cloud expertise",
+      "Kubernetes & Docker",
+      "Terraform / Ansible",
+      "CI/CD pipelines",
+      "Linux administration"
+    ],
+    "niceToHaveRequirements": [
+      "Monitoring tools experience",
+      "Scripting (Python/Bash)",
+      "Database knowledge",
+      "Security best practices"
+    ],
+    "matchedCore": [
+      "6-8 yrs ✓ - ~9 years DevOps experience",
+      "Cloud ✓ - AWS expert",
+      "K8s ✓ - Expert level",
+      "IaC ✓ - Terraform, Ansible",
+      "CI/CD ✓ - Expert level",
+      "Linux ✓ - Strong Linux experience"
+    ],
+    "matchedNiceToHave": [
+      "Monitoring ✓ - Grafana, Prometheus, Splunk",
+      "Scripting ✓ - Python, Bash expert",
+      "Databases ✓ - MySQL, PostgreSQL, MongoDB",
+      "Security ✓ - IAM, DevSecOps"
+    ],
+    "searchProfile": "Senior DevOps Engineer",
+    "source": "naukri"
+  }
+  ],
+  "summary": {
+    "totalJobsScraped": 46,
+    "linkedinScraped": 21,
+    "naukriScraped": 25,
+    "filteredPostAge": 18,
+    "filteredCompanyEligibility": 9,
+    "failedResumeMatch": 5,
+    "passingJobs": 10,
+    "searchProfilesUsed": 3,
+    "note": "Company ineligible jobs included in results but marked companyEligible: false. You may still apply if company criteria are flexible. Naukri results shown without remote filter due to limited remote postings within 3 days."
+  }
+}
