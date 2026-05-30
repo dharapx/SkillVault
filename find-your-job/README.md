@@ -20,28 +20,75 @@
 
 ---
 
-## 🚀 How to Use
+## 🚀 Setup Guide — From Scratch
 
-### Prerequisites
-- [OpenCode](https://opencode.ai) CLI installed
-- Resume in PDF or Markdown format
-- LinkedIn account (for LinkedIn scraping)
-- Glassdoor account (optional, for full Glassdoor results)
-
-### Quick Start
+### 1. Install System Dependencies
 
 ```bash
-# Load the skill in OpenCode
-# The skill auto-triggers on keywords like:
-#   "find jobs", "job matcher", "match resume", "job search"
+# Python 3.10+ (required for MarkItDown)
+python --version   # must be >= 3.10
 
-# Or just tell your agent:
-"Find jobs matching my resume on LinkedIn, Naukri, and Glassdoor"
+# Node.js 18+ (required for OpenCode CLI)
+node --version     # must be >= 18
 ```
 
-### Configuration
+### 2. Install OpenCode CLI
 
-Edit `job-matcher-config.json` to customize:
+```bash
+# macOS / Linux
+curl -fsSL https://opencode.ai/install.sh | sh
+
+# Windows (PowerShell)
+iwr -useb https://opencode.ai/install.ps1 | iex
+
+# Verify
+opencode --version
+```
+
+### 3. Install Python Dependencies
+
+The skill uses **MarkItDown** (Microsoft's document-to-Markdown converter) for PDF resume extraction:
+
+```bash
+pip install 'markitdown[pdf]'
+```
+
+For OCR-heavy PDFs (scanned documents), also install:
+
+```bash
+pip install markitdown-ocr openai
+```
+
+### 4. Install Playwright (for job scraping)
+
+Playwright is used to automate browser interactions on LinkedIn, Naukri, and Glassdoor:
+
+```bash
+pip install playwright
+playwright install chromium
+```
+
+> **Windows users**: If `playwright install chromium` fails, run PowerShell as Administrator and try again. You may also need `pip install playwright[windows]`.
+
+### 5. Clone the Skill Repository
+
+```bash
+git clone https://github.com/<your-username>/SkillVault.git
+```
+
+Then copy the skill to OpenCode's skills directory:
+
+```bash
+# macOS / Linux
+cp -r SkillVault/find-your-job ~/.config/opencode/skills/
+
+# Windows (PowerShell)
+Copy-Item -Recurse SkillVault\find-your-job ~\.config\opencode\skills\
+```
+
+### 6. Configure the Skill
+
+Edit `~/.config/opencode/skills/find-your-job/job-matcher-config.json`:
 
 ```json
 {
@@ -49,14 +96,22 @@ Edit `job-matcher-config.json` to customize:
   "jobSites": ["linkedin", "naukri", "glassdoor"],
   "searches": [
     {
-      "profile": "Your Job Title",
+      "profile": "Your Desired Job Title",
       "linkedin": {
-        "keywords": "Keyword1 Keyword2",
-        "locations": ["City1", "City2", "Remote"],
+        "keywords": "DevOps Kubernetes Terraform",
+        "locations": ["Bangalore", "Remote"],
         "filters": { "remote": true, "datePosted": "past_week" }
       },
-      "naukri": { ... },
-      "glassdoor": { ... }
+      "naukri": {
+        "keywords": "DevOps Engineer",
+        "locations": ["Bangalore"],
+        "filters": { "remote": true, "experience": "5-10" }
+      },
+      "glassdoor": {
+        "keywords": "DevOps",
+        "locations": ["Bangalore"],
+        "filters": { "remote": true, "datePosted": "last_3_days" }
+      }
     }
   ],
   "scoring": {
@@ -68,6 +123,58 @@ Edit `job-matcher-config.json` to customize:
     "minEmployees": 1000
   },
   "jobPostMaxDays": 3
+}
+```
+
+### 7. Run It
+
+Start an OpenCode session and tell your agent:
+
+```
+Find jobs matching my resume on LinkedIn, Naukri, and Glassdoor
+```
+
+The skill will:
+1. Ask if you have a Markdown resume — or extract from your PDF
+2. Scrape all three job sites
+3. Score and rank results
+4. Present a table with direct apply links
+
+---
+
+## ⚙️ Configuration Walkthrough
+
+| Field | What it does |
+|-------|-------------|
+| `resume` | Path to your resume PDF. `~` is resolved to your home directory. |
+| `jobSites` | Which sites to scrape. Remove any you don't want. |
+| `searches[].profile` | Human label for the search (e.g., "Senior DevOps Engineer"). Appears in output. |
+| `searches[].linkedin.keywords` | Keywords for LinkedIn search. |
+| `searches[].linkedin.locations` | Location filter for LinkedIn. Add `"Remote"` for remote jobs. |
+| `searches[].linkedin.filters.remote` | `true` = remote only. Omit or set `false` to include all. |
+| `searches[].linkedin.filters.datePosted` | `"past_week"`, `"past_24_hours"`, or `"past_month"`. |
+| `searches[].naukri` / `glassdoor` | Same structure per site. Site-specific filters may differ. |
+| `scoring.coreMatchThreshold` | Minimum % required for core skills (default: 90). 0-100. |
+| `scoring.niceToHaveThreshold` | Minimum % for nice-to-have skills (default: 70). 0-100. |
+| `companyEligibility.minAgeYears` | Skip companies younger than this (default: 10). |
+| `companyEligibility.minEmployees` | Skip companies smaller than this (default: 1000). |
+| `jobPostMaxDays` | Ignore jobs older than this many days (default: 3). |
+
+**Example: Entry-level / fresher config**
+```json
+{
+  "scoring": { "coreMatchThreshold": 60, "niceToHaveThreshold": 40 },
+  "companyEligibility": { "minAgeYears": 0, "minEmployees": 0 },
+  "jobPostMaxDays": 30
+}
+```
+
+**Example: Senior executive search**
+```json
+{
+  "scoring": { "coreMatchThreshold": 95, "niceToHaveThreshold": 85 },
+  "companyEligibility": { "minAgeYears": 15, "minEmployees": 5000 },
+  "jobPostMaxDays": 7
 }
 ```
 
