@@ -182,63 +182,29 @@ The skill will:
 
 ## ⚙️ How It Works
 
-```
-              ┌──────────────────────┐
-              │   Do you have a      │
-              │  Markdown resume?    │◄──── Ask user first
-              └──────┬───────┬───────┘
-                   Yes│       │No
-              ┌───────┘       └──────────┐
-              ▼                           ▼
-     ┌──────────────────┐      ┌──────────────────┐
-     │ Load markdown    │      │  Read PDF with   │
-     │ from user/cache  │      │   Read tool      │
-     └────────┬─────────┘      └────────┬─────────┘
-              │                    Fail │ OK
-              │              ┌──────────┘  │
-              │              ▼             ▼
-              │     ┌──────────────┐ ┌────────────┐
-              │     │  MarkItDown  │ │  Save to   │
-              │     │   fallback   │ │  cache     │
-              │     └──────┬───────┘ └──────┬─────┘
-              │            ▼                │
-              │     ┌──────────────┐        │
-              │     │  Save to     │────────┘
-              │     │  cache       │
-              │     └──────┬───────┘
-              │            ▼
-              └─────► ┌──────────────┐
-                      │    Resume    │
-                      │   Profile    │
-                      └──────┬───────┘
-                             ▼
-    ┌─────────────────────────────────────┐
-    │           Job Scraping              │
-    ├──────────┬──────────┬───────────────┤
-    │ LinkedIn │  Naukri  │  Glassdoor    │
-    │ (25jobs) │ (25jobs) │  (25jobs)     │
-    └────┬─────┴────┬─────┴──────┬────────┘
-         ▼          ▼            ▼
-    ┌─────────────────────────────────────┐
-    │     Filter by Post Age (≤3d)        │
-    │     Filter by Company Elig.         │
-    └────────────────┬────────────────────┘
-                     ▼
-    ┌─────────────────────────────────────┐
-    │          Semantic Scoring           │
-    │  ┌──────────┐  ┌─────────────────┐  │
-    │  │ Core ≥90%│  │ Nice-to-have≥70%│  │
-    │  └──────────┘  └─────────────────┘  │
-    └────────────────┬────────────────────┘
-                     ▼
-    ┌─────────────────────────────────────┐
-    │        Dedup & Rank Results         │
-    ├─────────────────────────────────────┤
-    │  #  Title         Core  Source      │
-    │  1  DevOps Lead    95%  LinkedIn    │
-    │  2  Platform Eng   92%  Naukri      │
-    │  3  Cloud Arch     90%  Glassdoor   │
-    └─────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["Do you have a Markdown resume?"] -->|Yes| B["Load markdown from user / cache"]
+    A -->|No| C["Read PDF with Read tool"]
+    C -->|OK| D["Save to cache"]
+    C -->|Fail| E["MarkItDown fallback"]
+    E --> F["Save to cache"]
+    B --> G["Resume Profile"]
+    D --> G
+    F --> G
+    G --> H["Job Scraping"]
+    H --> I["LinkedIn (max 25)"]
+    H --> J["Naukri (max 25)"]
+    H --> K["Glassdoor (max 25)"]
+    I --> L["Filter: Post Age ≤3d<br/>Company Age ≥10y<br/>Employees ≥1000"]
+    J --> L
+    K --> L
+    L --> M["Semantic Scoring"]
+    M --> N["Core skills ≥90%"]
+    M --> O["Nice-to-have ≥70%"]
+    N --> P["Dedup & Rank Results"]
+    O --> P
+    P --> Q["📊 Ranked Table + Job Links"]
 ```
 
 ---
