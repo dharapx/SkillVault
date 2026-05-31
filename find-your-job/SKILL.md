@@ -22,6 +22,28 @@ All configuration and data files live in this skill's directory:
 |---|---|
 | `job-matcher-config.json` | Search profiles, locations, filters, thresholds, eligibility rules |
 | `linkedin-jobs-matched.json` | Output — written by the agent after each run |
+| `resume-cached.md` | Cached resume in Markdown |
+
+---
+
+## CRITICAL: Execution Model (MUST Follow Exactly)
+
+This workflow uses a **strict sequential multi-agent model** for reliability:
+
+```
+Main Agent orchestrates:
+  Step 1 → [Dedicated Agent: LinkedIn Scraper] → validates output
+  Step 2 → [Dedicated Agent: Naukri Scraper]   → validates output
+  Step 3 → [Dedicated Agent: Glassdoor Scraper] → validates output
+  Step 4 → [Dedicated Agent: Scorer & Reporter] → final output
+```
+
+**RULES:**
+1. Process ONE site at a time. Never launch two site scrapers in parallel.
+2. Each site gets its own dedicated `general` Task agent with a clear, focused prompt.
+3. After each site agent completes, the main agent MUST validate the output JSON file before proceeding to the next site.
+4. Only after ALL 3 sites are scraped does the main agent launch the scoring agent.
+5. Every intermediate file uses the SAME schema so agents can be swapped/re-run independently.
 
 ---
 
@@ -70,374 +92,349 @@ If neither the Read tool, MarkItDown CLI, nor MarkItDown Python works, ask the u
 - If the user provides text inline or a path, save it to `resume-cached.md`.
 
 ### Parse the Resume Profile
-From the cached/resolved Markdown text, extract:
-- **Job titles** held in the past
-- **Technical skills** (languages, frameworks, tools, databases)
-- **Years of experience** per skill domain
-- **Education** (degrees, fields, certifications)
-- **Industries** worked in
+From the cached/resolved Markdown text, extract these fields into a structured dictionary:
 
-Store this as a structured dictionary — referenced for every job comparison.
+```json
+{
+  "name": "Pulakesh Dhara",
+  "currentTitle": "DevOps Lead / Platform Engineer",
+  "totalYearsExperience": 9,
+  "skills": {
+    "cloud": ["AWS", "Azure", ...],
+    "iaC": ["Terraform", "CloudFormation"],
+    "containers": ["Docker", "Kubernetes", "EKS", "ECS"],
+    "observability": ["Grafana", "Prometheus", ...],
+    "cicd": ["Azure DevOps", "TeamCity"],
+    "programming": ["Python", "Bash", "PowerShell", ...],
+    "ai": ["AI Agents", "Prompt Engineering"]
+  },
+  "education": [...],
+  "locations": ["Pune"]
+}
+```
 
----
-
-## Workflow Overview
-
-For each site in `config.jobSites`, run the searches defined in `config.searches[]`:
-
-- **linkedin** → Step 3 (LinkedIn Playwright workflow)
-- **naukri** → Step 4 (Naukri Playwright workflow)
-- **glassdoor** → Step 5 (Glassdoor Playwright workflow)
-
-All jobs from all sites flow into the same **Scoring** (Step 6), **Dedup** (Step 7), and **Presentation** (Step 8) steps.
-
----
-
-## Step 3: LinkedIn Scraping (via Playwright)
-
-### 3a. Launch Playwright and Log In
-
-1. Open LinkedIn Jobs: `https://www.linkedin.com/jobs/`
-2. Ask the user to log in manually, wait for confirmation
-
-### 3b. For Each Search Profile, Search LinkedIn
-
-Navigate to: `https://www.linkedin.com/jobs/search/?keywords={URL_ENCODED_KEYWORDS}&location={URL_ENCODED_LOCATION}`
-
-Use the first location from the profile's `locations` array.
-
-### 3c. Apply Filters
-
-For each filter in the profile's `filters`:
-- **Remote**: Click "Remote" filter toggle if `remote: true`
-- **Date Posted**: Select matching option (e.g. "Past week")
-- **Experience Level**: Check matching levels
-
-### 3d. Scrape LinkedIn Job Cards
-
-Extract for every job: **title**, **company**, **company page URL**, **location**, **job link** (the full `href` from the job title anchor, e.g. `https://www.linkedin.com/jobs/view/{JOB_ID}`), **posted date text**.
-
-**MANDATORY**: Every job result MUST have a non-empty `url` field. Extract the `href` attribute from the job title `<a>` element — do not generate or construct URLs. If the URL cannot be extracted, log a warning and skip that job.
-
-Limit: first **25 job listings** per search profile.
-
-### 3e. Parse Posted Date & Filter by Age
-
-Convert to days since posted — if > `config.jobPostMaxDays` (3), skip.
-
-### 3f. Get Job Details
-
-Click each remaining job card, expand description, extract full text.
-
-### 3g. Get Company Details
-
-Navigate to company page, extract company size and founded year.
+THIS structured dictionary is passed to every scraping agent and the scoring agent.
 
 ---
 
-## Step 4: Naukri.com Scraping (via Playwright)
+## Intermediate Data Format
 
-Naukri.com does not require login for browsing jobs, but logged-in users get more results.
+Every scraper agent writes its output to a shared intermediate file at:
+`~/.config/opencode/skills/find-your-job/raw-jobs.json`
 
-### 4a. Navigate to Naukri Search
+Schema:
+```json
+{
+  "source": "linkedin" | "naukri" | "glassdoor",
+  "searchProfile": "DevOps Lead / Platform Engineer",
+  "jobs": [
+    {
+      "title": "string (required)",
+      "company": "string (required)",
+      "url": "string (required) — full absolute URL to job posting",
+      "companyPageUrl": "string or null",
+      "location": "string (required)",
+      "postedDate": "string (required) — e.g. '2 days ago'",
+      "postedDateDays": "number (required) — days since posted",
+      "description": "string (required) — full job description text",
+      "companyAge": "number or null — years since founded",
+      "companySize": "string or null — e.g. '5,001-10,000 employees'",
+      "companyEligible": "bool (required) — based on config thresholds"
+    }
+  ]
+}
+```
 
-For each search profile, navigate to:
-`https://www.naukri.com/{URL_ENCODED_KEYWORDS}-jobs-in-{URL_ENCODED_LOCATION}`
+**VALIDATION RULE:** Before returning, the scraper agent MUST verify every job has a non-empty `url`, `title`, `company`, `location`, `postedDate`, `postedDateDays`, and `description`. If any fail, skip those jobs.
 
-If the URL pattern above doesn't work, use the search page:
-`https://www.naukri.com/jobs?k={URL_ENCODED_KEYWORDS}&l={URL_ENCODED_LOCATION}`
+---
 
-### 4b. Apply Naukri Filters
+## Site-by-Site Workflow (Main Agent Orchestration)
 
-Look for filter sections on the left sidebar:
-- **Experience**: Select the matching experience range
-- **Posted Date**: Look for "Posted by" filter — select "Last 3 days" or "Last week"
-- **Remote / Work From Home**: Check the "Work from Home" or "Remote" checkbox
-- **Salary**: Optional — can skip
-- **Company Type**: Optional — can skip
+For EACH site in `config.jobSites` (linkedin → naukri → glassdoor), in this exact order:
 
-### 4c. Scrape Naukri Job Cards
+### 1. Launch a dedicated Task agent for that site
 
-Use Playwright to extract job cards from the search results. Each card typically has:
-- `class="jobTuple"` or `data-job-id` or similar container
+The main agent creates a `general` Task agent with this prompt pattern. The prompt must include:
+- The raw-jobs.json file path and schema
+- The config file path and contents
+- The resume profile (structured skills dictionary)
+- The site-specific scraping instructions from below
+- The exact search URLs to use (the main agent computes the URLs from config)
+- A clear instruction to write results to raw-jobs.json **appending** to any existing data
 
-For each job card extract:
-- **Job title** — usually in an `<a>` tag with class `title` or inside `class="job-title"`
-- **Company name** — usually in an `<a>` tag with class `subTitle` or `comp-name`
-- **Location** — text near a location icon or class `loc`
-- **Job link** — the **full absolute `href`** on the title anchor (usually `https://www.naukri.com/job/...`)
-- **Posted date** — text like "Posted X days ago", "Just posted", "Posted today"
-- **Salary** — if visible (optional)
-- **Experience required** — if visible (optional)
-- **Job description snippet** — short preview text
+### 2. Wait for agent to complete
 
-**MANDATORY**: Every job result MUST have a non-empty `url` field with the full absolute URL to the job detail page. If the URL cannot be extracted, skip that job.
+### 3. Validate output
 
-### 4d. Parse Posted Date (Naukri)
+After the agent returns, the main agent MUST:
+a. Read raw-jobs.json
+b. Count jobs from that site
+c. Verify ALL required fields are non-empty for every job from that site
+d. If `< 3` jobs scraped, re-run with a warning to the scraper
 
-Naukri displays dates as:
-- "Just posted" or "Posted today" → 0 days
+### 4. Proceed to next site
+
+---
+
+## Step 1: LinkedIn Scraping (via Dedicated Agent)
+
+### 1a. Prepare URLs
+
+For each search profile in config.searches[], compute:
+```
+https://www.linkedin.com/jobs/search/?keywords={URL_ENCODED_KEYWORDS}&location={URL_ENCODED_FIRST_LOCATION}
+```
+
+### 1b. Agent Instructions
+
+The LinkedIn scraper agent receives:
+- A LinkedIn browser session that is already logged in (main agent handles login)
+- List of search URLs to process
+- Resume profile for context
+- raw-jobs.json path
+
+It MUST:
+1. For each search URL:
+   - Navigate to the URL
+   - Wait 3 seconds
+   - Apply filters (date posted, remote, experience level)
+   - Wait for results to load
+   - Extract ALL visible job cards (title, company, location, url, posted date)
+   - For each card where days <= 3:
+     - Click the job card
+     - Wait 2 seconds
+     - Extract full description text (click "show more" if needed)
+     - Get company details from the right panel
+   - Limit: 25 jobs per search profile
+2. Write ALL collected jobs to raw-jobs.json (appending mode)
+3. Return stats: how many scraped, how many filtered, how many passed
+
+### 1c. LinkedIn Filters
+
+- **Date Posted**: Click filter button → select "Past week" → click "Show results"
+- **Remote**: Click filter button → check "Remote" and "Hybrid" → click "Show results"
+- **Experience Level**: Click filter button → check "Mid-Senior" and "Director" → click "Show results"
+
+### 1d. Date Parsing
+
+LinkedIn shows dates like:
+- "7 hours ago", "15 hours ago" → 0 days
+- "1 day ago", "2 days ago", "3 days ago" → 1, 2, 3 days
+- "1 week ago", "2 weeks ago", "1 month ago" → 7, 14, 30 days
+
+---
+
+## Step 2: Naukri.com Scraping (via Dedicated Agent)
+
+### 2a. Prepare URLs
+
+For each search profile, compute:
+```
+https://www.naukri.com/jobs?k={URL_ENCODED_KEYWORDS}&l={URL_ENCODED_LOCATION}
+```
+
+### 2b. Agent Instructions
+
+1. Navigate to Naukri search page
+2. Apply filters:
+   - **Posted Date**: Look for "Posted by" or "Date" filter — select "Last 3 days"
+   - **Remote/WFH**: Check "Work from Home" or "Remote" checkbox
+3. Wait 3 seconds for results
+4. Extract job cards (class `jobTuple` or `data-job-id` or similar):
+   - Title, Company, Location, URL, Posted date, Salary, Experience
+5. For each job with days <= 3:
+   - Navigate to job detail URL
+   - Wait 3 seconds
+   - Extract full description
+   - Extract company info (size, founded year)
+6. Write to raw-jobs.json (append mode)
+7. Return stats
+
+### 2c. Date Parsing
+
+Naukri shows:
+- "Just posted", "Posted today" → 0 days
 - "Posted 1 day ago" → 1 day
 - "Posted X days ago" → X days
-- "Posted X weeks ago" → X × 7 days
-- "Posted on DD MMM YYYY" → compute from date
+- "Posted X weeks ago" → X * 7 days
 
-If `days > config.jobPostMaxDays (3)`, skip immediately.
+### 2d. Company Lookup
 
-### 4e. Get Naukri Job Details
-
-Click each remaining job card or navigate to its detail URL:
-
-1. Navigate to the job detail page URL
-2. Wait 3 seconds for the page to load
-3. Extract the **full job description** — usually in a `div` with class `job-detail` or `job-description`
-4. Extract **company name** and **company info** from the detail page
-5. Look for **company size/revenue** info — often in the "About Company" section
-6. Look for **company founded year** if available
-
-For company eligibility on Naukri:
-- **Company age**: Search for "Founded", "Since", "Incorporated" text. If not found, try searching the company name on Google or skip age check with note.
-- **Employee count**: Search for "employees", "headcount", "team size". If not found, estimate from company description or skip with note.
-
-### 4f. Navigate Back
-
-Call `playwright_navigate_back()` to return to search results for the next job.
+If company size/founded year not found on Naukri:
+- Search company name on Google with "founded" and "employees"
+- Use `webfetch` or `websearch` tool
+- If still not found, set `companyEligible` to `true` (pass) with a note
 
 ---
 
-## Step 5: Glassdoor Scraping (via Playwright)
+## Step 3: Glassdoor Scraping (via Dedicated Agent)
 
-Glassdoor requires login to view full job details. Open in headed mode for manual login.
+### 3a. Login
 
-### 5a. Open Glassdoor Jobs
+Glassdoor requires login. The main agent:
+1. Opens a new browser tab to `https://www.glassdoor.co.in/Job/index.htm`
+2. Asks the user to log in manually
+3. Confirms login before launching the Glassdoor agent
 
-Navigate to: `https://www.glassdoor.co.in/Job/index.htm`
+### 3b. Prepare URLs
 
-Ask the user: *"A browser window has opened. Please log into Glassdoor in that window. Once logged in, type 'done' to continue."*
+Use Glassdoor search:
+```
+https://www.glassdoor.co.in/Job/jobs.htm?sc.keyword={URL_ENCODED_KEYWORDS}
+```
 
-Wait for the user to confirm they are logged in.
+### 3c. Agent Instructions
 
-### 5b. For Each Search Profile, Search Glassdoor
-
-Navigate to:
-`https://www.glassdoor.co.in/Job/{URL_ENCODED_LOCATION}/{URL_ENCODED_KEYWORDS}-jobs-SRCH_IL.0,{LOCATION_LEN}_KO{KEYWORDS_START},{KEYWORDS_END}.htm`
-
-If the above URL is complex, use the simpler search:
-`https://www.glassdoor.co.in/Job/jobs.htm?sc.keyword={URL_ENCODED_KEYWORDS}&locT=C&locId={LOCATION_ID}`
-
-Use the first location from the profile's `locations` array.
-
-### 5c. Apply Glassdoor Filters
-
-Look for filter sections:
-- **Date Posted**: Look for "Posted" or "Date" filter — select "Last 3 days" or "Past week"
-- **Remote**: Look for "Remote" or "Work From Home" filter toggle
-- **Salary**: Optional — can skip
-- **Company Rating**: Optional — can skip
-- **Experience Level**: Look for "Experience" filter if available
-
-### 5d. Scrape Glassdoor Job Cards
-
-Extract job cards from search results. Glassdoor cards typically have:
-- `class="jobListing"` or `data-id` or `job-container` or similar
-
-For each job card extract:
-- **Job title** — usually in a link with `class="jobLink"` or inside heading element
-- **Company name** — usually near `class="jobEmpolyerName"` or similar
-- **Location** — class `jobLocation` or similar
-- **Job link** — the **full absolute `href`** on the job title link (full URL to job detail, e.g. `https://www.glassdoor.co.in/Job/...`)
-- **Posted date** — text like "Posted X days ago", "Posted today", "24h ago", "30d+"
-- **Salary estimate** — if visible (optional)
-- **Company rating** — star rating if visible (optional)
-
-**MANDATORY**: Every job result MUST have a non-empty `url` field with the full absolute URL. If the URL cannot be extracted, skip that job.
-
-Limit: first **25 job listings** per search profile.
-
-### 5e. Parse Posted Date (Glassdoor)
-
-Glassdoor displays dates as:
-- "Posted today" or "Just posted" → 0 days
-- "24h ago" or "Posted 1 day ago" → 1 day
-- "Posted X days ago" → X days
-- "Posted X weeks ago" → X × 7 days
-- "30d+" or "30+ days ago" → treat as 31
-- "Posted on [Month] [DD], [YYYY]" → compute from date
-
-If `days > config.jobPostMaxDays (3)`, skip immediately.
-
-### 5f. Get Glassdoor Job Details
-
-For each remaining job listing:
-
-1. Click the job card or navigate to its detail URL
-2. Wait 3 seconds for the detail panel to load
-3. Click "Show more" or expand the description if a "More" button is present
-4. Extract the **full job description** — usually in a `div` with class `jobDescriptionContent` or `desc`
-5. Extract **company info** from the detail page or company section:
-   - **Company size** — look for "Size" or "Company Size" text (e.g., "1001 to 5000 employees")
-   - **Founded year** — look for "Founded" text (e.g., "Founded 2010")
-6. Also check the Glassdoor company overview section for these details
-
-### 5g. Get Glassdoor Company Details
-
-If company size/founded year not found in job detail:
-
-1. Click the company name link to go to the company's Glassdoor page
-2. Extract company size from the "Overview" section
-3. Extract founded year from the "Overview" section
-4. Call `playwright_navigate_back()` to return
-
-### 5h. Company Eligibility (Glassdoor)
-
-Apply the same eligibility filters:
-- **Company age < `config.companyEligibility.minAgeYears`** → skip
-- **Employee count lower bound < `config.companyEligibility.minEmployees`** → skip
-
-If company details cannot be found on Glassdoor, try searching the company on LinkedIn or Google, or skip with a note.
+1. Navigate to Glassdoor search URL
+2. Apply filters:
+   - **Date Posted**: Select "Last 3 days" or "Past week"
+   - **Remote**: Toggle "Remote" filter if available
+3. Wait 3 seconds
+4. Extract job cards:
+   - Title, Company, Location, URL, Posted date, Salary
+5. For each job with days <= 3:
+   - Click the job card
+   - Wait 3 seconds
+   - Click "Show more" to expand description
+   - Extract full description
+   - Extract company info (size, founded) from the detail panel
+6. Write to raw-jobs.json (append mode)
+7. Return stats
 
 ---
 
-## Step 6: Score Each Job Against the Resume
+## Step 4: Scoring & Reporting (via Dedicated Agent)
 
-**IMPORTANT**: During scoring, every job result must retain its `url` (direct link to the job posting), `source` (linkedin/naukri/glassdoor), and `postedDate` fields. These are required for the output table and JSON file.
+### 4a. Agent Instructions
 
-### 6a. Identify Core vs Nice-to-Have Requirements
+The scoring agent receives:
+- raw-jobs.json with all collected jobs from all 3 sites
+- Resume profile (structured skills dictionary)
+- Config file thresholds
 
-Parse the job description:
-- **Core**: Under "Requirements", "Required", "Qualifications", "Must have", "Minimum qualifications", "Responsibilities" (key skills)
-- **Nice-to-Have**: Under "Nice to have", "Preferred", "Good to have", "Bonus points", "Plus", "Desirable"
+It MUST:
 
-### 6b. Score Core Requirements
+1. **Parse each job description** into core requirements and nice-to-have requirements:
+   - **Core**: Under sections titled "Requirements", "Required", "Qualifications", "Must have", "Minimum qualifications", "Key Responsibilities" (specific technical skills only)
+   - **Nice-to-Have**: Under sections titled "Nice to have", "Preferred", "Good to have", "Bonus points", "Plus", "Desirable"
+   - **Skip generic phrases**: "team player", "communication skills", "attention to detail", "problem-solving", "work in a team"
 
-For each core requirement, check Resume Profile for a match.
-**Core Match %** = (core requirements met / total core requirements) × 100
+2. **Score core requirements**:
+   - For each core requirement, check if it matches any skill in the resume
+   - Be generous with semantic matching (e.g., "AWS" matches "AWS", "Kubernetes" matches "K8s", "Python" matches "python")
+   - Core Match % = (matched core / total core) × 100
 
-Pass threshold: `>= config.scoring.coreMatchThreshold` (default 90%)
+3. **Score nice-to-have requirements**:
+   - Same matching logic
+   - Nice-to-Have Match % = (matched nice-to-have / total nice-to-have) × 100
 
-### 6c. Score Nice-to-Have Requirements
+4. **Apply thresholds**:
+   - Core >= 90% AND Nice-to-Have >= 70% → PASS
+   - Otherwise → skip
 
-**Nice-to-Have Match %** = (nice-to-have met / total nice-to-have) × 100
+5. **Deduplicate**: Same company + same title = keep higher core match
 
-Pass threshold: `>= config.scoring.niceToHaveThreshold` (default 70%)
+6. **Generate output**:
 
-### 6d. Overall Decision
+### 4b. Terminal Output
 
-Passes **both** filters → add to results.
-
----
-
-## Step 7: Deduplicate Results
-
-Merge jobs from LinkedIn, Naukri, and Glassdoor. Same company + same title = duplicate (keep the one with higher core match).
-
----
-
-## Step 8: Present Results
-
-### Terminal Output
-
-Ranked table sorted by **Core Match %** descending, showing the source site:
+Ranked table sorted by Core Match % descending:
 
 ```
 ┌────┬─────────────────────────────┬──────────────────┬──────────┬──────────┬──────────┬──────────┬────────────┬──────────┐
 │ #  │ Job Title                   │ Company          │ Core %   │ Nice %   │ Age yrs  │ Size     │ Posted     │ Source   │
 ├────┼─────────────────────────────┼──────────────────┼──────────┼──────────┼──────────┼──────────┼────────────┼──────────┤
-│  1 │ DevOps Lead                 │ Acme Corp        │    95%   │    80%   │      14  │  5000+   │ 2 days ago│ LinkedIn │
-│  2 │ Sr Platform Engineer        │ Beta Inc         │    92%   │    75%   │      22  │  10000+  │ 1 day ago │ Naukri   │
-│  3 │ Cloud Engineer              │ Gamma Ltd        │    90%   │    72%   │      12  │  5000+   │ 2 days ago│ Glassdoor│
+│  1 │ DevOps Lead                 │ Acme Corp        │    95%   │    80%   │      14  │  5000+   │ 2 days ago │ LinkedIn │
 └────┴─────────────────────────────┴──────────────────┴──────────┴──────────┴──────────┴──────────┴────────────┴──────────┘
 ```
 
-**MANDATORY**: Always include a **Job Links** section after the table with the direct URL for every passing job:
-
+Then **Job Links** section with direct URLs:
 ```
 Job Links:
   1. https://www.linkedin.com/jobs/view/4418297213  (LinkedIn)
-  2. https://www.naukri.com/job/12345  (Naukri)
-  3. https://www.glassdoor.co.in/Job/12345  (Glassdoor)
 ```
 
-**MANDATORY**: Always include a **Summary** section:
-
+Then **Summary** section with full stats:
 ```
-Summary: Found 8 matching jobs across 3 search profiles and 3 job sites.
-  - LinkedIn scraped: 45, filtered: 30, matched: 5
-  - Naukri scraped: 30, filtered: 22, matched: 2
-  - Glassdoor scraped: 20, filtered: 15, matched: 1
-  - Final matches: 8
+Summary: Found N matching jobs across 3 search profiles and 3 job sites.
+  - LinkedIn scraped: X, filtered: Y, matched: Z
+  - Naukri scraped: X, filtered: Y, matched: Z
+  - Glassdoor scraped: X, filtered: Y, matched: Z
+  - Final matches: N
 ```
 
-### Save Full Results
+### 4c. Save Full Results
 
-Write to `linkedin-jobs-matched.json`. Every result object MUST include these fields:
+Write to `linkedin-jobs-matched.json` with EXACT schema:
 
-| Field | Required | Description |
-|---|---|---|
-| `title` | yes | Job title |
-| `company` | yes | Company name |
-| `url` | **yes** | **Full absolute URL to the job posting** — extracted during scrape, never generated/guessed |
-| `companyPageUrl` | if available | URL to company page |
-| `location` | yes | Job location |
-| `postedDate` | yes | Relative posted date (e.g. "2 days ago") |
-| `companyAge` | if available | Company age in years |
-| `companySize` | if available | Employee count range |
-| `companyEligible` | yes | `true`/`false` based on config thresholds |
-| `matchScores` | yes | Object with `core`, `niceToHave`, `overall` |
-| `source` | yes | `"linkedin"`, `"naukri"`, or `"glassdoor"` |
-| `searchProfile` | yes | Which search profile matched this job |
+```json
+{
+  "generatedAt": "ISO timestamp",
+  "resume": "Pulakesh Dhara",
+  "config": {
+    "coreThreshold": 90,
+    "niceToHaveThreshold": 70,
+    "minCompanyAge": 10,
+    "minEmployees": 1000,
+    "maxPostDays": 3
+  },
+  "stats": {
+    "totalScraped": 0,
+    "linkedinScraped": 0,
+    "linkedinFiltered": 0,
+    "naukriScraped": 0,
+    "naukriFiltered": 0,
+    "glassdoorScraped": 0,
+    "glassdoorFiltered": 0,
+    "finalMatches": 0
+  },
+  "results": [
+    {
+      "title": "string (required)",
+      "company": "string (required)",
+      "url": "string (required) — full absolute URL, NEVER empty",
+      "companyPageUrl": "string or null",
+      "location": "string (required)",
+      "postedDate": "string (required)",
+      "companyAge": "number or null",
+      "companySize": "string or null",
+      "companyEligible": "bool (required)",
+      "matchScores": { "core": 90, "niceToHave": 80, "overall": 85 },
+      "source": "linkedin" | "naukri" | "glassdoor",
+      "searchProfile": "string (required)"
+    }
+  ]
+}
+```
 
-**MANDATORY RULE**: Every result in `results[]` MUST have a non-empty `url` field pointing to the actual job posting page. Skip any job where the URL cannot be extracted. Do not construct or guess URLs.
-
----
-
-## Step 9: Site-Specific Anti-Scraping Guidelines
-
-### LinkedIn
-- Add **2-4 second delays** between every Playwright action
-- Do NOT scroll too fast — mimic human reading speed
-- Do not scrape more than **25 jobs per search profile** per run
-- If LinkedIn shows "Sign in to see more results", ask the user to sign in again
-
-### Naukri
-- Add **3-5 second delays** between page navigations
-- Naukri may show a CAPTCHA after rapid requests — if hit, stop and ask the user to solve it
-- Naukri may require login to view full job descriptions — if a login wall appears, ask the user to log in
-- Some Naukri job cards have multiple `data-job-id` attributes — prefer exact selectors
-- Naukri pagination uses "Next" buttons at the bottom — limit to page 1 (first 20-25 jobs)
-
-### Glassdoor
-- Add **3-5 second delays** between page navigations
-- Glassdoor is aggressive with anti-bot measures — if blocked, stop and inform the user
-- Some Glassdoor pages require JavaScript rendering — Playwright handles this natively
-- Glassdoor may show a sign-in wall for full job descriptions — ask the user to log in if needed
-- Company details (size, founded) are often on the company overview page, not the job listing
-- Glassdoor URLs use location IDs — prefer navigating via search page rather than constructing URLs manually
-- If CAPTCHA appears, ask the user to solve it
+**VALIDATION RULE:** Before writing, verify EVERY result has a non-empty `url`. If any are missing, skip those entries.
 
 ---
 
 ## Important Guidelines (All Sites)
 
-### Matching Judgment
-- Be generous with semantic equivalence: "5+ years" matches "6 years", "React.js" matches "React"
-- For years of experience, a match within 1 year counts as a full match
-- For skills, consider a related or broader skill as a partial match (70%+)
-- Do not count generic requirements like "team player" against the user
-
-### URL Consistency (CRITICAL)
-- Every job result across all stages (scraping, scoring, output JSON, terminal display) MUST carry its `url` field.
-- The `url` field is the full absolute URL to the job posting page on the source site.
-- Never construct or guess a URL — always extract it from the page's HTML `href` attribute.
-- Before writing results to `linkedin-jobs-matched.json`, verify that every entry has a non-empty `url`. If any are missing, re-scrape or skip those entries.
-- In the terminal output table, the "Job Links" numbered section is **mandatory** — every passing job must have its URL listed.
+### URL Consistency (CRITICAL - Do Not Skip)
+- Every job result across ALL stages MUST carry a non-empty `url` field.
+- The `url` is the full absolute URL to the job posting page on the source site.
+- Never construct or guess a URL — always extract from the page's HTML `href` attribute.
+- If URL extraction fails, skip that job with a warning.
+- Verify `raw-jobs.json` has non-empty URLs before passing to scoring.
 
 ### Error Handling
-- If Playwright fails to find an element, try an alternative selector
+- If Playwright fails to find an element, try 2 alternative selectors
 - If a job detail page fails to load, skip and continue
-- If the resume PDF cannot be read, ask the user for the correct path
+- If CAPTCHA appears, stop and ask the user to solve it
+- If a site blocks scraping, note it in stats and continue to next site
+- If `< 3` jobs come back from a search, the scraper agent should re-scroll and try again
 
-### Config File Location
-`~/.config/opencode/skills/find-your-job/job-matcher-config.json`
+### Anti-Scraping Delays (MANDATORY)
+- LinkedIn: 2-4 seconds between actions
+- Naukri: 3-5 seconds between actions
+- Glassdoor: 3-5 seconds between actions
 
-Always resolve the `resume` path in the config relative to the user's home directory (`~`).
+### Matching Judgment
+- Be generous: "5+ years" matches "6 years", "React.js" matches "React"
+- Within 1 year of experience = full match
+- Related/broader skill = 70% match
+- Do NOT count generic soft skills as requirements
